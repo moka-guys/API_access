@@ -156,6 +156,11 @@ class OMIM_API():
         outputfile.write(self.gene.rstrip() + "\tOMIM\t" + omim + "\n" + self.gene.rstrip() + "\tClinvar\t" + clinvar + "\n")
         # close output file
         outputfile.close()
+        
+        #empty dictionaries
+        self.list_of_OMIM={}
+        self.list_of_clinvar={}
+        self.list_of_clinvar_records=[]
 
 if __name__ == "__main__":
     # create object
