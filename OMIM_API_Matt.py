@@ -9,7 +9,6 @@ This is saved in a text file
 '''
 
 import requests
-import MySQLdb
 from xml.etree import ElementTree
 
 
@@ -41,7 +40,7 @@ class OMIM_API():
         self.gene = ''
 
         # output file
-        self.outputfile = "/home/aled/Google Drive/BIOINFORMATICS STP/CBI-7/matt_script_output.txt"
+        self.outputfile = "/home/aled/Google Drive/BIOINFORMATICS STP/CBI-7/rasopathies/genemania_noonan_physical_int_output.txt"
 
     def get_omim(self, gene):
         '''this module recieves a gene symbol, and returns the response as a json object (specified in url)'''
@@ -52,7 +51,7 @@ class OMIM_API():
         # concatenate url and gene
         url = self.url1 + gene + self.url2
 
-       # the api key is required in the HTTP header
+        # the api key is required in the HTTP header
         headers = {'Apikey': '1WKtca7vQsuGozsS9tygSA'}
 
         # the response package retrieves the results of the url search
@@ -104,7 +103,7 @@ class OMIM_API():
 
     def fetch_clinvar_records(self):
         '''this module fetches each individual clinvar record'''
-        #for each record
+        # for each record
         for record in self.list_of_clinvar_records:
             # set url to find a single entry
             url = self.clinvar_report + record
@@ -115,7 +114,7 @@ class OMIM_API():
             else:
                 # for testing:
                 # url="https://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=clinvar&rettype=variation&id=2351"
-
+                #print url
                 # the response package retrieves the results of the url search
                 response = requests.get(url)
 
@@ -157,10 +156,10 @@ class OMIM_API():
         # close output file
         outputfile.close()
         
-        #empty dictionaries
-        self.list_of_OMIM={}
-        self.list_of_clinvar={}
-        self.list_of_clinvar_records=[]
+        # empty dictionaries
+        self.list_of_OMIM = {}
+        self.list_of_clinvar = {}
+        self.list_of_clinvar_records = []
 
 if __name__ == "__main__":
     # create object
@@ -168,13 +167,13 @@ if __name__ == "__main__":
     # if not using input file hard code the gene list 
     # gene = ["WHRN","USH1C"]
     
-    #define input file
-    file = "/home/aled/Google Drive/BIOINFORMATICS STP/CBI-7/gene_list_input.txt"
-    #open input file
-    genelist = open(file, "r")
+    # define input file
+    input_file = "/home/aled/Google Drive/BIOINFORMATICS STP/CBI-7/rasopathies/genemania_noonan_genes_physical_int.txt"
+    # open input file
+    genelist = open(input_file, "r")
     # loop through gene by gene
     for i in genelist:
         # ensure not blank line
         if len(i) > 2:
-            #pass gene to module
+            # pass gene to module
             a.get_omim(i)

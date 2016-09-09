@@ -131,7 +131,7 @@ if __name__ == "__main__":
     a = OMIM_API()
     
     # state search term
-    phenotype = "microcephaly"
+    phenotype = "noonan"
     
     # set operator to AND or OR 
     a.operator="OR"

@@ -134,7 +134,7 @@ if __name__ == "__main__":
     a = OMIM_API()
     
     # state search term
-    gene = ["CYLC1","SLC17A4","CRYAA","RS1","SLC6A3","PAPPA","TAS2R46","EPX","SHCBP1L","HGF","GDF10","NOX3","LMO7","KRT18","GABRR1","ATXN3L","GPR88","IL9","NKAIN1","MSTN"]#,"ADGRV1"]
+    gene = ["CYLC1","SLC17A4","CRYAA","RS1","SLC6A3","PAPPA","TAS2R46","EPX","SHCBP1L","HGF","GDF10","NOX3","LMO7","KRT18","GABRR1","ATXN3L","GPR88","IL9","NKAIN1","MSTN"]
     #gene = ["USH1C","KCTD3","NINL","USH2A","CLRN1","HLA-G","DFNB31","PCDH15","PDZD7","CDH23"]
     #gene = ["WHRN"]
     for i in gene:
