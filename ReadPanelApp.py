@@ -107,14 +107,14 @@ class PanelAPP_API():
                     red_symbol_list.append(symbol)
 
             # populate the dictionary for this panel with an entry for each gene list
-            #self.dict_of_panels[i]["red"] = red_list
-            self.dict_of_panels[i]["amber"] = amber_list
-            self.dict_of_panels[i]["green"] = green_list
+            #self.dict_of_panels[i]["Red"] = red_list
+            self.dict_of_panels[i]["Amber"] = amber_list
+            self.dict_of_panels[i]["Green"] = green_list
             
             # populate the dictionary for this panel with an entry for each gene list
             #self.dict_of_panels[i]["red_symbols"] = red_symbol_list
-            self.dict_of_panels[i]["amber_symbols"] = amber_symbol_list
-            self.dict_of_panels[i]["green_symbols"] = green_symbol_list
+            self.dict_of_panels[i]["Amber_symbols"] = amber_symbol_list
+            self.dict_of_panels[i]["Green_symbols"] = green_symbol_list
             
         # call module to write output file 
         self.write_output()
