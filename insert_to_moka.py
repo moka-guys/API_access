@@ -27,7 +27,7 @@ class insert_PanelApp:
         self.API_symbol_result = "S:\\Genetics_Data2\\Array\\Audits and Projects\\161014 PanelApp\\PanelAppOut_symbols_161207_modified.txt"
         
         # variables for the database connection
-        self.cnxn = pyodbc.connect("DRIVER={SQL Server}; SERVER=GSTTV-MOKA; DATABASE=mokadata;")
+        self.cnxn = pyodbc.connect("DRIVER={SQL Server}; SERVER=GSTTV-MOKA; DATABASE=devdatabase;")
         self.cursor = self.cnxn.cursor()
 
         # name of category in item category
@@ -189,7 +189,7 @@ class insert_PanelApp:
             
             #define the panel name as disease name and panel colour
             self.panel_hash_colour=panel_hash+"_"+colour
-            self.panel_name_colour=panel_name+"_"+colour
+            self.panel_name_colour=panel_name+" (Panel App "+colour+" v"+str(version)+")"
             
             # check if panel is already in the database
             if self.panel_hash_colour in self.all_panels:
@@ -226,7 +226,7 @@ class insert_PanelApp:
                 self.version_key = version_key[0][0]
 
                 # Insert the NGSpanel, returning the key 
-                self.insert_query_return_key = "insert into ngspanel(category, subcategory, panel, panelcode, active, checker1,checkdate,PanelType) values (" + str(self.panel_key) + "," + str(self.version_key) + ",'" + self.panel_name_colour+"_"+str(version) + "','Pan',1,"+self.moka_user+",CURRENT_TIMESTAMP,2)" 
+                self.insert_query_return_key = "insert into ngspanel(category, subcategory, panel, panelcode, active, checker1,checkdate,PanelType) values (" + str(self.panel_key) + "," + str(self.version_key) + ",'" + self.panel_name_colour + "','Pan',1,"+self.moka_user+",CURRENT_TIMESTAMP,2)" 
                 self.insert_query_exception="cannot get the key when inserting this panel"
                 key=self.insert_query_return_key_function()
                 self.inserted_panel_key= key[0]
@@ -301,7 +301,7 @@ class insert_PanelApp:
             version = names[2]
             colour = names[3]
             
-            panel_name_colour=panel_name+"_"+colour
+            panel_name_colour=panel_name+" (Panel App "+colour+" v"+str(version)+")"
             #print panel_name_colour
             
             if self.panel_name_colour==panel_name_colour:
@@ -313,7 +313,7 @@ class insert_PanelApp:
                     api_symbol_list.append(str(gene))
                 
                 #print api_symbol_list
-                self.select_qry="select Symbol from dbo.NGSPanel, dbo.NGSPanelGenes where dbo.NGSPanel.NGSPanelID = dbo.NGSPanelgenes.NGSPanelID and Panel = '"+self.panel_name_colour+"_"+version+"'"
+                self.select_qry="select Symbol from dbo.NGSPanel, dbo.NGSPanelGenes where dbo.NGSPanel.NGSPanelID = dbo.NGSPanelgenes.NGSPanelID and Panel = '"+self.panel_name_colour+"'"
                 self.select_qry_exception="Cannot find the genes in this panel:"+self.panel_name_colour
                 panel_genes=self.select_query()
                 db_list=[]
@@ -369,13 +369,14 @@ class insert_PanelApp:
             
 
             # define the panel name as disease name and panel colour
-            self.panel_name_colour=panel_name+"_"+colour
+            panel_name_colour=panel_name+" (Panel App "+colour+" v"+str(version)+")"
             
-            self.select_qry="select PanelApp_Symbol from dbo.NGSPanel, dbo.NGSPanelGenes,dbo.GenesHGNC_current_translation where dbo.GenesHGNC_current_translation.HGNCID=dbo.NGSPanelGenes.HGNCID and dbo.NGSPanel.NGSPanelID = dbo.NGSPanelgenes.NGSPanelID and Panel = '"+self.panel_name_colour+"_"+str(version)+"'"
-            self.select_qry_exception="Cannot find the genes in this panel:"+self.panel_name_colour
-            
+            self.select_qry="select PanelApp_Symbol from dbo.NGSPanel, dbo.NGSPanelGenes,dbo.GenesHGNC_current_translation where dbo.GenesHGNC_current_translation.HGNCID=dbo.NGSPanelGenes.HGNCID and dbo.NGSPanel.NGSPanelID = dbo.NGSPanelgenes.NGSPanelID and Panel = '"+panel_name_colour+"'"
+            self.select_qry_exception="Cannot find the genes in this panel:"+panel_name_colour
+            # print self.select_qry
             panel_genes=self.select_query()
             db_list=[]
+            
             
             for i in panel_genes:
                 db_list.append(str(i[0]))
@@ -388,11 +389,12 @@ class insert_PanelApp:
                     #print gene+" not in api"
             for gene in api_symbol_list:
                 if gene not in db_list:
-                    if self.panel_name_colour.startswith("Mitochondrial disorders"):
+                    if panel_name_colour.startswith("Mitochondrial disorders"):
                         pass
                     else:
                         if count == 0:
-                            print self.panel_name_colour
+                            print db_list
+                            print panel_name_colour
                             count=count+1
                             print gene+" not in db"
                         else:
@@ -401,11 +403,11 @@ class insert_PanelApp:
                             
             for gene in db_list:
                 if gene not in api_symbol_list:
-                    if self.panel_name_colour.startswith("Mitochondrial disorders"):
+                    if panel_name_colour.startswith("Mitochondrial disorders"):
                         pass
                     else:
                         if count == 0:
-                            print self.panel_name_colour
+                            print panel_name_colour
                             count=count+1
                             print gene+" not in api"
                         else:
