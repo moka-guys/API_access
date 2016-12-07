@@ -23,11 +23,11 @@ import pyodbc
 class insert_PanelApp:
     def __init__(self):
         # the file containing the result of the API query
-        self.API_result = "S:\\Genetics_Data2\\Array\\Audits and Projects\\161014 PanelApp\\PanelAppOut.txt"
-        self.API_symbol_result = "S:\\Genetics_Data2\\Array\\Audits and Projects\\161014 PanelApp\\PanelAppOut_symbols.txt"
+        self.API_result = "S:\\Genetics_Data2\\Array\\Audits and Projects\\161014 PanelApp\\PanelAppOut_161207_modified.txt"
+        self.API_symbol_result = "S:\\Genetics_Data2\\Array\\Audits and Projects\\161014 PanelApp\\PanelAppOut_symbols_161207_modified.txt"
         
         # variables for the database connection
-        self.cnxn = pyodbc.connect("DRIVER={SQL Server}; SERVER=GSTTV-MOKA; DATABASE=devdatabase;")
+        self.cnxn = pyodbc.connect("DRIVER={SQL Server}; SERVER=GSTTV-MOKA; DATABASE=mokadata;")
         self.cursor = self.cnxn.cursor()
 
         # name of category in item category
