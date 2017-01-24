@@ -1,10 +1,7 @@
 '''
 Created on 13/Oct/2016
-
 This script reads the PanelAPP API and loops through all the gene panels.
-
 For each panel a list of red, amber and green ensembl ids are collected in a dictionary.
-
 @author: aled
 '''
 
@@ -23,7 +20,7 @@ class PanelAPP_API():
         self.dict_of_panels = {}
         
         # output_file
-        self.outputfilepath="/home/aled/Documents/PanelApp/"
+        self.outputfilepath="/home/$USER/Documents/PanelApp/"
 
     def get_list_of_panels(self):
         ''' Retrieve all the gene panels from the PanelAPP url. Create an dictionary key for each one made up of a tuple of the panel name and version number'''
@@ -114,7 +111,7 @@ class PanelAPP_API():
             for j in self.dict_of_panels[i]:
                 # if it's a gene symbol panel  
                 if "symbols" in j:
-                    " if no symbols for this panel"
+                    #if no symbols for this panel
                     if len(self.dict_of_panels[i][j])==0:
                         pass
                     else:
