@@ -1,4 +1,6 @@
-# PanelApp_API
+# PanelApp_API 
+See also barista http://89.188.29.124/Bioinformatics/PanelApp_Panels_to_Moka
+
 ## Overview
 This script accesses the panelapp API and returns two files containing a list of gene symbols and ensembl ids for each gene panel.
 
@@ -48,4 +50,6 @@ and for ensemblids:
 Panelhash_panelname_version_colour:['list','of','ensemblids'] eg.
 
 553f968cbb5a1616e5ed45cc_Classical tuberous sclerosis_1.0_Green:["'ENSG00000165699','LRG_486'", "'ENSG00000103197','LRG_487'"]
+
+
 
