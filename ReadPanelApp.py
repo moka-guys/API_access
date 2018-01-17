@@ -36,10 +36,10 @@ class PanelAPP_API():
 
         # loop through each panel within the json
         for panel in json_results["result"]:
-            
             # create a tuple of the name and version
-            toople = (str(panel["Panel_Id"]),str(panel["Name"]), float(panel["CurrentVersion"]))
-            
+            toople = (str(panel["Panel_Id"]),str(panel["Name"]), str(panel["CurrentVersion"]))
+            #print toople
+
             # create a dictionary key with this tuple and an empty dictionary as the value
             self.dict_of_panels[toople] = {}
 
