@@ -9,7 +9,7 @@ For each panel a list of red, amber and green ensembl ids are collected in a dic
 '''
 
 import requests
-
+from datetime import datetime
 
 class PanelAPP_API():
 
@@ -25,6 +25,9 @@ class PanelAPP_API():
         # output_file
         self.outputfilepath="/home/mokaguys/Documents/PanelApp/"
 
+        # timestamp
+        self.now = datetime.now().strftime("%Y%m%d")
+
     def get_list_of_panels(self):
         ''' Retrieve all the gene panels from the PanelAPP url. Create an dictionary key for each one made up of a tuple of the panel name and version number'''
 
@@ -37,7 +40,8 @@ class PanelAPP_API():
         # loop through each panel within the json
         for panel in json_results["result"]:
             # create a tuple of the name and version
-            toople = (str(panel["Panel_Id"]),str(panel["Name"]), str(panel["CurrentVersion"]))
+            # replace underscore from panel names to prevent issues splitting this string when importing to moka
+            toople = (str(panel["Panel_Id"]),str(panel["Name"].replace("_","-")), str(panel["CurrentVersion"]))
             #print toople
 
             # create a dictionary key with this tuple and an empty dictionary as the value
@@ -106,8 +110,8 @@ class PanelAPP_API():
             
     def write_output(self):
         #open two files, one to capture all ensembl ids for each panel and one to capture a list of symbols.
-        outputfile=open(self.outputfilepath+"PanelAppOut.txt",'w')
-        symbols_outputfile=open(self.outputfilepath+"PanelAppOut_symbols.txt",'w')
+        outputfile=open(self.outputfilepath + self.now + "_PanelAppOut.txt",'w')
+        symbols_outputfile=open(self.outputfilepath + self.now + "_PanelAppOut_symbols.txt",'w')
         # for each panel
         for i in self.dict_of_panels:
             # for each colour
