@@ -27,8 +27,8 @@ import pyodbc
 class insert_PanelApp:
     def __init__(self):
         # the file containing the result of the API query
-        self.API_result = "S:\\Genetics_Data2\\Array\\Audits and Projects\\161014 PanelApp\\PanelAppOut_161207_modified.txt"
-        self.API_symbol_result = "S:\\Genetics_Data2\\Array\\Audits and Projects\\161014 PanelApp\\PanelAppOut_symbols_161207_modified.txt"
+        self.API_result = "F:\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_modified.txt"
+        self.API_symbol_result = "F:\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_symbols.txt"
         
         # variables for the database connection
         self.cnxn = pyodbc.connect("DRIVER={SQL Server}; SERVER=GSTTV-MOKA; DATABASE=devdatabase;")
@@ -115,7 +115,7 @@ class insert_PanelApp:
         for i in API_result:
             split1 = i.split(':')
             names = split1[0].split('_')
-            version = float(names[2])
+            version = names[2]
 
             # create a list of unique version numbers
             if version not in self.list_of_versions:
@@ -171,7 +171,7 @@ class insert_PanelApp:
                 #i[0] is panel name, i[1] is version number
                 #if panel_name already in dict, just add the version number
                 panelhash=str(i[0])
-                version=float(i[1])
+                version=str(i[1])
                 if panelhash in self.all_panels:
                     self.all_panels[panelhash].append(version)
                 else:
@@ -190,18 +190,18 @@ class insert_PanelApp:
         for i in API_result:
             # split - example line  = panelhash_Epidermolysis bullosa_0.8_amber:[list,of,ensemblids]
             split1 = i.split(':')
-            self.ensembl_ids = split1[1]
+            #self.ensembl_ids = split1[1]
             names = split1[0].split('_')
             # removing any "'" from panel_name (messes up the sql query)
             panel_hash = str(names[0])
             panel_name = str(names[1].replace("'",""))
-            version = float(names[2])
+            version = str(names[2])
             colour = str(names[3])
             
             #define the unique panel identifier as panel hash _ panel colour
             self.panel_hash_colour=panel_hash+"_"+colour
             # human readable panel name is panel name (Panel App Green v1.0)
-            self.panel_name_colour=panel_name+" (Panel App "+colour+" v"+str(version)+")"
+            self.panel_name_colour=panel_name+" (Panel App "+colour+" v"+version+")"
             
             # check if panel is already in the database
             if self.panel_hash_colour in self.all_panels:
@@ -212,7 +212,7 @@ class insert_PanelApp:
 
             # if not insert to items table
             else:
-                print "panel not present "+self.panel_name_colour, self.panel_hash_colour+ "inserting to item table"
+                print "panel not present "+self.panel_name_colour, self.panel_hash_colour + " inserting to item table"
                 self.insert_query_return_key = "insert into item(item,ItemCategoryIndex1ID) values ('" + self.panel_hash_colour+ "'," + self.item_category_NGS_panel + ")"
                 key=self.insert_query_return_key_function()
                 self.panel_key=key[0]
@@ -221,22 +221,25 @@ class insert_PanelApp:
             # if the panel exists
             if self.panel_hash_colour in self.all_panels:
                 # get the maximum version number from the existing panels in db
-                max_version = max(self.all_panels[self.panel_hash_colour])
+                max_version = str(max(self.all_panels[self.panel_hash_colour]))
                 exists=True
             else:
                 # if not in database set exists flag == false
-                max_version=-1
-                exists=False
+                max_version = "-1.0"
+                exists = False
                 
-            # if this panel is newer get the key for this version number from item table (all versions were inserted above)
-            if version > max_version:
+            # take the version number and the max version
+            # split on "." to split 0.12 into major and minor release numbers eg 0 and 12.
+            # do the same for current max version in database
+            # if the new panel has a higher major release number, or the same major and higher minor release update the panel
+            if int(version.split(".")[0]) > int(max_version.split(".")[0]) or int(version.split(".")[0]) == int(max_version.split(".")[0]) and int(version.split(".")[1]) > int(max_version.split(".")[1]):
                 if exists:
-                    # first, if it exists need to deactivate the existing panel
-                    self.insert_query="update ngspanel set active = 0 where category = "+ str(self.panel_key)
+                    # first, if it exists need to deactivate the existing panel(s)
+                    self.insert_query = "update ngspanel set active = 0 where category = " + str(self.panel_key)
                     self.insert_query_function()
                 
                 # then get the itemid of the version 
-                self.select_qry = "select itemid from item where item in ('" + str(version) + "') and ItemCategoryIndex1ID = " + str(self.VersionItemCategory)
+                self.select_qry = "select itemid from item where item in ('" + version + "') and ItemCategoryIndex1ID = " + str(self.VersionItemCategory)
                 self.select_qry_exception = "Cannot get key for version number"
                 version_key = self.select_query()
                 self.version_key = version_key[0][0]
@@ -252,21 +255,20 @@ class insert_PanelApp:
                 self.insert_query_function()
 
                 # Call module to insert gene list to NGSPanelGenes.
-                self.add_genes_to_NGSPanelGenes()
+                self.add_genes_to_NGSPanelGenes(split1[1])
 
             # if not a new version ignore
             else:
                 pass
     
-    def add_genes_to_NGSPanelGenes(self):
+    def add_genes_to_NGSPanelGenes(self, list_of_genes):
         '''This module inserts the list of genes into the NGSGenePanel. The HGNC table is queried to find the symbol and HGNCID from the ensembl id'''
         # list of cleaned gene ids:
         list_of_genes_cleaned=[]
 
         # convert the string containing gene list into a python list
         # split and remove all unwanted characters
-        list_of_genes=self.ensembl_ids.split(",")
-        for i in list_of_genes:
+        for i in list_of_genes.split(","):
             i=i.replace("\"","").replace("[","").replace("]","").replace(" ","").rstrip()
             # append to list
             list_of_genes_cleaned.append(i)
@@ -310,7 +312,7 @@ class insert_PanelApp:
         for i in API_symbols:
             # split - example line  = panelhash_Epidermolysis bullosa_0.8_amber:[list,of,ensemblids]
             split1 = i.split(':')
-            self.ensembl_ids = split1[1]
+            #self.ensembl_ids = split1[1]
             names = split1[0].split('_')
             
             # removing any "'" from panel_name (messes up the sql query)
@@ -332,7 +334,7 @@ class insert_PanelApp:
                 
                 # pull out all the gene symbols for the genes in that panel (from NGSPanelGenes table)
                 self.select_qry="select Symbol from dbo.NGSPanel, dbo.NGSPanelGenes where dbo.NGSPanel.NGSPanelID = dbo.NGSPanelgenes.NGSPanelID and Panel = '"+self.panel_name_colour+"'"
-                self.select_qry_exception="Cannot find the genes in this panel:"+self.panel_name_colour
+                self.select_qry_exception="Cannot find the genes in this panel:"+self.panel_name_colour+". This is probably because the ensembl ID is missing for this panel in the panelapp out file. Copy the ensembl id from the HGNC snapshot table."
                 panel_genes=self.select_query()
                 
                 # create and populate list to hold db symbols
@@ -381,7 +383,7 @@ class insert_PanelApp:
         
         #FOR EACH PANEL
         for i in API_symbols:
-            # split - example line  = Epidermolysis bullosa_0.8_amber:[list,of,ensemblids]
+            # split - example line  = Epidermolysis bullosa_0.8_amber:[list,of,genesymbols]
             split1 = i.split(':')
             self.ensembl_ids = split1[1]
             names = split1[0].split('_')
@@ -410,6 +412,9 @@ class insert_PanelApp:
             for i in panel_genes:
                 db_list.append(str(i[0]))
             
+            api_only_genes = []
+            db_only_genes = []
+
             # set a count so that a summary of missing genes is only reported when there is a gene missing
             count=0
             #for each gene in the api
@@ -419,15 +424,16 @@ class insert_PanelApp:
                     #ignore if it's a mitochrondrial panel
                     if panel_name_colour.startswith("Mitochondrial disorders"):
                         pass
-                    #otherwise set count ==1 and print the panel name and the missing gene. These may require 
+                    #otherwise set count ==1 and print the panel name and the missing gene.
                     else:
                         if count == 0:
                             #print db_list
                             print panel_name_colour
                             count=count+1
-                            print gene+" not in db. This may need correcting in the api result."
+                            api_only_genes.append(gene)
+                            print gene+" not in db. This may be because the ensembl ID in panel app != EnsemblID_PanelApp in Moka OR there is no ensemblID in panel app for this gene (inform GEL and add to PanelappOut.txt)."
                         else:
-                            print gene+" not in db. This may need correcting in the api result."
+                            print gene+" not in db. This may be because the ensembl ID in panel app != EnsemblID_PanelApp in Moka OR there is no ensemblID in panel app for this gene (inform GEL and add to PanelappOut.txt) ."
             count = 0
             #repeat to check for any genes which are in the database but not the API
             #for gene in db
@@ -442,9 +448,9 @@ class insert_PanelApp:
                         if count == 0:
                             print panel_name_colour
                             count=count+1
-                            print gene+" not in api.  This may be because of an ensemblid for gene b in the record for gene a. These may need manually removing from the API result before import."
+                            print gene + " not in api. This may be because the gene symbol in panel app != PanelApp_Symbol in moka (correct PanelApp_Symbol) OR an ensemblid for this gene is incorrectly in for another gene in the panel - check if the ensemblid for this gene (in EnsemblID_PanelApp) is listed in  panelapp out and remove if needed."
                         else:
-                            print gene+" not in api. This may be because of an ensemblid for gene b in the record for gene a. These may need manually removing from the API result before import."
+                            print gene + " not in api. This may be because the gene symbol in panel app != PanelApp_Symbol in moka OR an ensemblid for this gene is incorrectly in for another gene in the panel - check if the ensemblid for this gene (in EnsemblID_PanelApp) is listed in  panelapp out and remove if needed."
         # close file        
         API_symbols.close()
         
