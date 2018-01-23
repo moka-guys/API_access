@@ -27,8 +27,8 @@ import pyodbc
 class insert_PanelApp:
     def __init__(self):
         # the file containing the result of the API query
-        self.API_result = "F:\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_modified.txt"
-        self.API_symbol_result = "F:\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_symbols.txt"
+        self.API_result = "\\\\gstt.local\\apps\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_modified.txt"
+        self.API_symbol_result = "\\\\gstt.local\\apps\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_symbols.txt"
         
         # list to hold the API response
         self.API_list = []
@@ -118,8 +118,8 @@ class insert_PanelApp:
             self.API_list = API_output.readlines()
         
         # split to capture the version number
-        for i in self.API_list:
-            split1 = i.split(':')
+        for panel in self.API_list:
+            split1 = panel.split(':')
             names = split1[0].split('_')
             version = names[2]
             # add version to the list
@@ -147,9 +147,11 @@ class insert_PanelApp:
         self.select_qry_exception = "cannot find any versions in item table"
         list_of_db_versions = self.select_query()
         
-        #loop through results and append to a list
-        for i in list_of_db_versions:
-            self.versions_in_db.append(i[0])
+        #loop through results 
+        for version in list_of_db_versions:
+            # Even though only one column is returned in the query a tuple is returned
+            # append the the first item in the tuple to the list
+            self.versions_in_db.append(version[0])
         
         # if version in API result not already in db:
         for version in self.versions_in_api:
@@ -192,9 +194,9 @@ class insert_PanelApp:
         # open and parse the text file containing the api query result
         
         #loop through and extract required info
-        for i in self.API_list:
+        for panel in self.API_list:
             # split - example line  = panelhash_Epidermolysis bullosa_0.8_amber:[list,of,ensemblids]
-            split1 = i.split(':')
+            split1 = panel.split(':')
             
             # take everything before the colon and split on underscore
             names = split1[0].split('_')
@@ -223,9 +225,7 @@ class insert_PanelApp:
                 self.panel_key = self.fetch_key()[0]
 
             # if panel not in items table already insert it
-            else:
-                #print "New panel: %s. inserting to item table" % self.panel_name_colour
-                
+            else:               
                 # set insert query
                 self.insert_query_return_key = "insert into item(item,ItemCategoryIndex1ID) values ('%s',%s)" % (self.panel_hash_colour,self.item_category_NGS_panel)
                 # insert and capture the key (itemid)
@@ -287,7 +287,6 @@ class insert_PanelApp:
 
             # if not a new version ignore
             else:
-                #print "no update to %s " % self.panel_name_colour 
                 pass
     
     def add_genes_to_NGSPanelGenes(self, list_of_genes):
@@ -297,16 +296,14 @@ class insert_PanelApp:
 
         # convert the string containing gene list into a python list
         # split and remove all unwanted characters
-        for i in list_of_genes.split(","):
-            i = i.replace("\"","").replace("[","").replace("]","").replace(" ","").rstrip()
+        for gene in list_of_genes.split(","):
+            gene = gene.replace("\"","").replace("[","").replace("]","").replace(" ","").rstrip()
             # append to list
-            list_of_genes_cleaned.append(i)
+            list_of_genes_cleaned.append(gene)
 
         #loop through gene list
         for ensbl_id in list_of_genes_cleaned:
-            if len(ensbl_id)<5:
-                pass
-            else:
+            if len(ensbl_id)>5:
                 # for each ensemblid get the HGNCID and PanelAppSymbol from use the hgnc translation table.
                 #set ignore flag to ignore exception
                 self.ignore = True
@@ -329,7 +326,7 @@ class insert_PanelApp:
         #unset ignore variable
         self.ignore=False
         
-        # Call module to insert any gene symbols which do not have an emsembl if in panel app, or in the HGNC_translation table.
+        # Call module to insert any gene symbols which do not have an ensemblID in panel app, or in the HGNC_translation table.
         self.check_for_missing_genes()
     
     def check_for_missing_genes(self):
@@ -344,9 +341,9 @@ class insert_PanelApp:
         # create and populate list to hold symbols
         db_list = []
         # lop through the select query reponse
-        for i in imported_genes:
+        for gene in imported_genes:
             # add the gene symbol to the list
-            db_list.append(str(i[0]))
+            db_list.append(str(gene[0]))
         
         # create a list to populate with error messages to print
         to_print = []
@@ -372,8 +369,8 @@ class insert_PanelApp:
             print self.panel_name_colour, self.panel_hash_colour
             print "NB if errant genes are reported in Moka AND genes are missing from the API it's probably that moka.panelapp_symbol == panelapp symbol "
             # loop through the print statements and print
-            for i in to_print:
-                print i 
+            for statement in to_print:
+                print statement 
 
     def populate_api_symbols_dict(self):
         '''
@@ -389,7 +386,7 @@ class insert_PanelApp:
                 # everything before the colon
                 names = splitline[0].split('_')
                 # panelhash
-                panel_hash=names[0]
+                panel_hash = names[0]
                 # panel name
                 panel_name = names[1].replace("'","")# removing any "'" from panel_name (messes up the sql query)
                 # version number
@@ -399,7 +396,7 @@ class insert_PanelApp:
                 # panel hash colour 
                 panel_hash_colour = panel_hash + "_" + colour
                 #rebuild the panelapp name
-                panel_name_colour=panel_name+" (Panel App "+colour+" v"+str(version)+")"
+                panel_name_colour = panel_name + " (Panel App " + colour + " v" + str(version) + ")"
                 
                 # create a entry in the dictionary with the panel hash with empty list as value
                 self.API_symbols[panel_hash_colour] = []
