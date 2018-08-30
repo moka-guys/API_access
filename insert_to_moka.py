@@ -27,8 +27,8 @@ import pyodbc
 class insert_PanelApp:
     def __init__(self):
         # the file containing the result of the API query
-        self.API_result = "\\\\gstt.local\\apps\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_modified.txt"
-        self.API_symbol_result = "\\\\gstt.local\\apps\\Moka\\Files\\Software\\PanelApp\\20180118_PanelAppOut_symbols.txt"
+        self.API_result = "\\\\gstt.local\\apps\\Moka\\Files\\Software\\PanelApp\\20180828_PanelAppOut_modified.txt"
+        self.API_symbol_result = "\\\\gstt.local\\apps\\Moka\\Files\\Software\\PanelApp\\20180828_PanelAppOut_symbols.txt"
         
         # list to hold the API response
         self.API_list = []
@@ -36,6 +36,7 @@ class insert_PanelApp:
         self.db_list = []
 
         # variables for the database connection
+        #self.cnxn = pyodbc.connect("DRIVER={SQL Server}; SERVER=GSTTV-MOKA; DATABASE=mokadata;")
         self.cnxn = pyodbc.connect("DRIVER={SQL Server}; SERVER=GSTTV-MOKA; DATABASE=devdatabase;")
         self.cursor = self.cnxn.cursor()
 
@@ -348,29 +349,29 @@ class insert_PanelApp:
         # create a list to populate with error messages to print
         to_print = []
         
+        
         # assess if any symbols from the api aren't in moka
         # loop through the genes for this panel from the dictionary populated from the api symbol list
         for api_gene in self.API_symbols[self.panel_hash_colour]:
             # if the gene symbol is not in the list of gene symbols
             if api_gene not in db_list:
                 # add the error statement to the list
-                to_print.append(api_gene + "missing from moka. is there a ensembl ID for this gene?")
+                to_print.append(api_gene + " missing from moka. is there a ensembl ID for this gene?")
         
         # check if there are any symbols imported to Moka that aren't present in the API
         for db_gene in db_list:
             # if this gene symbol not in the API list
             if db_gene not in self.API_symbols[self.panel_hash_colour]:
                 # add the error statement to the list
-                to_print.append(db_gene + "imported to moka but symbol not in API. is there a errant ensembl ID in the api? (look if the panelapp_ensemblid in moka for this gene is in the API)")
+                to_print.append(db_gene + " imported to moka but symbol not in API. is there a errant ensembl ID in the api? (look if the panelapp_ensemblid in moka for this gene is in the API)")
         
         # if there are any print statements
-        if len(to_print) > 1:
+        if len(to_print) > 0:
             # print the panel info
-            print self.panel_name_colour, self.panel_hash_colour
+            print "\n" + self.panel_name_colour, self.panel_hash_colour
             print "NB if errant genes are reported in Moka AND genes are missing from the API it's probably that moka.panelapp_symbol == panelapp symbol "
             # loop through the print statements and print
-            for statement in to_print:
-                print statement 
+            print "\n".join(to_print)
 
     def populate_api_symbols_dict(self):
         '''
